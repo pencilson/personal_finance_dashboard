@@ -1,0 +1,5 @@
+Data/
+__pycache__/
+*.pyc
+*.csv
+personal_finance_dashboard/
