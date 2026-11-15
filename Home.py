@@ -130,7 +130,7 @@ col4.markdown(f"""
 st.divider()
 
 #Chart 1
-st.subheader("Expense per Category")
+st.subheader("Breakdowns")
 
 #Not using Bar Chart for now, Pie is more helpful
 #chart1 = px.bar( 
@@ -168,24 +168,6 @@ chart_daily.update_traces(
     hovertemplate ="Date : %{x}<br>Amount : Rp %{y:,.0f}"
 )
 st.plotly_chart(chart_daily, use_container_width=True)
-
-#Chart 2
-st.subheader("MoM Trend")
-
-chart2 = px.line(
-    monthly_total,
-    x = "Month",
-    y = "Total Calculated",
-    labels={"Total_Calculated": "Amount (Rp)", "Month": "Month"},
-    markers=True,
-    category_orders={
-        "Month" : df_filtered.sort_values("Month_Sort")["Month"].unique().tolist()
-    }
-)
-
-chart2.update_xaxes(type="category")
-chart2.update_yaxes(tickprefix="Rp ", tickformat=",.0f")
-st.plotly_chart(chart2, use_container_width=True)
 
 
 

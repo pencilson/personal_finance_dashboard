@@ -9,16 +9,23 @@ expense_cols = [
     "Breakfast/Coffee","Lunch",    "Dinner", "Snack", "Transport",    "Misc",    "Utilities", "Entertainment"
 ]
 
-budgets = {
-    "Breakfast/Coffee" : 200000,
-    "Lunch"            : 350000,
-    "Dinner"           : 350000,
-    "Snack"            : 100000,
-    "Transport"        : 50000,
-    "Entertainment"    : 1500000,
-    "Misc"             : 150000,
-    "Utilities"        : 300000
+budget_file = r"C:\Users\Emerson Anwar\Desktop\Projects\Data\Budgets.csv"
+
+demo_budgets = {
+    "Breakfast/Coffee": 150000, "Lunch": 300000, "Dinner": 300000,
+    "Snack": 100000, "Transport": 100000, "Entertainment": 600000,
+    "Misc": 150000, "Utilities": 250000,
 }
+
+def load_budgets():
+    try:
+        b = pd.read_csv(budget_file)
+        return dict(zip(b["Category"], b["Budget"]))
+    except Exception as e:
+        print(f"load_budgets failed:{e}")
+        return demo_budgets
+
+budgets = load_budgets()
 
 #GENERATE SCALED DEMO
 def generate_scaled_demo():
@@ -79,8 +86,10 @@ def load_data(): #define function loaddata to be reused later
         df1 = pd.read_csv(r"C:\Users\Emerson Anwar\Desktop\Projects\Data\Clean Data\May-Jun Expenses Clean.csv")
         df2 = pd.read_csv(r"C:\Users\Emerson Anwar\Desktop\Projects\Data\Clean Data\Jun-Jul Expenses Clean.csv")
         df3 = pd.read_csv(r"C:\Users\Emerson Anwar\Desktop\Projects\Data\Clean Data\Jul-Aug Expenses Clean.csv")
+        df4 = pd.read_csv(r"C:\Users\Emerson Anwar\Desktop\Projects\Data\Clean Data\Aug-Sep Expenses Clean.csv")
+        df5 = pd.read_csv(r"C:\Users\Emerson Anwar\Desktop\Projects\Data\Clean Data\Sep-Oct Expenses Clean.csv")
 
-        df = pd.concat([df1,df2,df3], ignore_index=True)
+        df = pd.concat([df1,df2,df3,df4,df5], ignore_index=True)
         df["Date"] = pd.to_datetime(df["Date"], dayfirst=True)
         df["Month_Sort"] = df["Date"].dt.to_period("M").astype(str)
         df["Month"] = df["Date"].dt.strftime("%b %Y") # stringify, %b = abbreviated Month, %Y  = year
@@ -182,11 +191,18 @@ def round_to_50 (amount, base =50000): #Base will default to 50 if don't pass ba
     return math.ceil(amount/base)*base #Round up
     
 
+def privacy_toggle():
+    if "privacy" not in st.session_state :
+        st.session_state.privacy = True
+    st.session_state.privacy = st.sidebar.checkbox(
+        "🔒 Privacy Mode", value=st.session_state.privacy
+    )
+    return st.session_state.privacy
+
 def get_sidebar_single(df):
     st.sidebar.title("Menu")
 
-    use_demo = st.sidebar.checkbox(
-        "Privacy Mode",    )
+    use_demo = privacy_toggle()
 
     if use_demo:
         df, factor = scale_data(df)
@@ -215,3 +231,5 @@ def get_sidebar_single(df):
     df_filtered = df[df["Month"] == month_filter]
 
     return df_filtered, month_filter, active_budgets
+
+
