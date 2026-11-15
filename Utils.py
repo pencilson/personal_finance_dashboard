@@ -12,9 +12,9 @@ expense_cols = [
 budget_file = r"C:\Users\Emerson Anwar\Desktop\Projects\Data\Budgets.csv"
 
 demo_budgets = {
-    "Breakfast/Coffee": 250000, "Lunch": 400000, "Dinner": 450000,
-    "Snack": 100000, "Entertainment": 1500000,
-    "Misc": 150000, "Utilities": 250000,
+    "Breakfast/Coffee": 300000, "Lunch": 450000, "Dinner": 500000,
+    "Snack": 150000, "Entertainment": 1500000,
+    "Misc": 100000, "Utilities": 500000,
 }
 
 def load_budgets():
