@@ -32,7 +32,7 @@ def generate_scaled_demo():
     import numpy as np
     dates = pd.date_range(
         start="2026-05-01",
-        end="2026-08-31",
+        end="2026-10-31",
         freq="D"
     )
 
@@ -40,7 +40,9 @@ def generate_scaled_demo():
         "2026-05": 0.75,
         "2026-06": 0.90,
         "2026-07": 1.15,
-        "2026-08": 1.00
+        "2026-08": 1.00,
+        "2026-09": 0.90,
+        "2026-10": 1.15
     }
 
     base_daily = {
