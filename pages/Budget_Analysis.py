@@ -29,7 +29,7 @@ if is_demo:
 #-------------------------Calculations-----------------------------------------------------
 
 #Set Filter Months
-df_filtered, month_filter,active_budget = get_sidebar_single(df)
+df_filtered, month_filter,active_budget = get_sidebar_single(df, is_demo)
 
 #Calculator
 months_count = df_filtered["Month"].nunique() #count unique months

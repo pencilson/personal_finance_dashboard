@@ -6,14 +6,14 @@ import datetime
 
 #Declare object shared across pages
 expense_cols = [
-    "Breakfast/Coffee","Lunch",    "Dinner", "Snack", "Transport",    "Misc",    "Utilities", "Entertainment"
+    "Breakfast/Coffee","Lunch", "Dinner", "Snack", "Misc", "Utilities", "Entertainment"
 ]
 
 budget_file = r"C:\Users\Emerson Anwar\Desktop\Projects\Data\Budgets.csv"
 
 demo_budgets = {
-    "Breakfast/Coffee": 150000, "Lunch": 300000, "Dinner": 300000,
-    "Snack": 100000, "Transport": 100000, "Entertainment": 600000,
+    "Breakfast/Coffee": 250000, "Lunch": 400000, "Dinner": 450000,
+    "Snack": 100000, "Entertainment": 1500000,
     "Misc": 150000, "Utilities": 250000,
 }
 
@@ -29,7 +29,11 @@ budgets = load_budgets()
 
 #GENERATE SCALED DEMO
 def generate_scaled_demo():
-    import numpy as np
+    import numpy as np    
+    rng = np.random.default_rng(42)
+
+    BASE = 3600000
+
     dates = pd.date_range(
         start="2026-05-01",
         end="2026-10-31",
@@ -37,47 +41,36 @@ def generate_scaled_demo():
     )
 
     monthly_multiplier = {
-        "2026-05": 0.75,
-        "2026-06": 0.90,
-        "2026-07": 1.15,
-        "2026-08": 1.00,
-        "2026-09": 0.90,
-        "2026-10": 1.15
+        "2026-06": 0.75, "2026-07": 0.85, "2026-08": 1.10,
+        "2026-09": 1.25, "2026-10": 1.05,
     }
 
-    base_daily = {
-        "Breakfast/Coffee": 5000,
-        "Lunch":            9000,
-        "Dinner":           8000,
-        "Snack":            3000,
-        "Transport":        4000,
-        "Misc":             2000,
-        "Utilities":        9000,
-        "Entertainment":    35000
+    shares = {
+        "Entertainment": 0.50, "Utilities": 0.15, "Dinner": 0.12,
+        "Lunch": 0.11, "Breakfast/Coffee": 0.07, "Snack": 0.03, "Misc": 0.02,
+    }
+    spend_prob = {
+        "Entertainment": 0.5, "Utilities": 0.3, "Dinner": 0.8, "Lunch": 0.8,
+        "Breakfast/Coffee": 0.7, "Snack": 0.3, "Misc": 0.2,
     }
 
-    rows = []
-    for date in dates:
-        month_key = date.strftime("%Y-%m")
-        multiplier = monthly_multiplier.get(month_key, 1.0)
-        row = {"Date": date}
-
-        for col, base in base_daily.items():
-            if col in ["Breakfast/Coffee", "Lunch", "Dinner"]:
-                spend = base * multiplier if np.random.random() > 0.2 else 0
-            elif col in ["Entertainment", "Transport"]:
-                spend = base * multiplier if np.random.random() > 0.5 else 0
-            else:
-                spend = base * multiplier if np.random.random() > 0.7 else 0
-
-            row[col] = round(spend / 1000) * 1000
-
-        rows.append(row)
-
-    df = pd.DataFrame(rows)
-    df["Date"] = pd.to_datetime(df["Date"])
+    df = pd.DataFrame({"Date": pd.date_range("2026-06-01", "2026-10-31", freq="D")})
     df["Month_Sort"] = df["Date"].dt.to_period("M").astype(str)
     df["Month"] = df["Date"].dt.strftime("%b %Y")
+    n = len(df)
+
+    weighting = {c: rng.random(n) * (rng.random(n) < spend_prob[c]) for c in shares}
+
+    for c in shares:
+        df[c] = 0.0
+    for month_key, pos in df.groupby("Month_Sort").indices.items():
+        target = BASE * monthly_multiplier.get(month_key, 1.0)
+        for c, share in shares.items():
+            w = weighting[c][pos]
+            if w.sum() == 0:
+                w = np.ones(len(pos))
+            df.loc[pos, c] = (w / w.sum() * target * share).round(-3)
+
     df["Remarks"] = "No Remarks"
     return df
 
@@ -94,10 +87,13 @@ def load_data(): #define function loaddata to be reused later
         df = pd.concat([df1,df2,df3,df4,df5], ignore_index=True)
         df["Date"] = pd.to_datetime(df["Date"], dayfirst=True)
         df["Month_Sort"] = df["Date"].dt.to_period("M").astype(str)
+        
         df["Month"] = df["Date"].dt.strftime("%b %Y") # stringify, %b = abbreviated Month, %Y  = year
         #df["Month"] = df["Date"].dt.to_period("M").astype(str)
+        df = df[df["Month_Sort"]>="2026-06"]
         return df, False
-    except:
+    except Exception as e:
+        print(f"load_data failed: {e}")
         df = generate_scaled_demo()
         return df, True
 
@@ -121,19 +117,6 @@ def get_scaled_data(factor):
         for col in budgets
     }
     
-    
-#Month Filter Dropdowns - Scarping multi-select to focus on single select for now
-    month_filter = st.sidebar.selectbox(
-        "Select Month", #Labels 
-        options = available_months, #get options from available_months
-        index = default_list #Defaults to Latest Month
-    )
-
-#Apply logic to dropdown
-    df_filtered =   (
-        df[df["Month"] == month_filter] #only returns single month string
-    )
-    return df_filtered, month_filter
 
 def get_sidebar_multi(df):
     st.sidebar.title("Menu")
@@ -201,10 +184,10 @@ def privacy_toggle():
     )
     return st.session_state.privacy
 
-def get_sidebar_single(df):
+def get_sidebar_single(df, is_demo = False):
     st.sidebar.title("Menu")
 
-    use_demo = privacy_toggle()
+    use_demo = privacy_toggle() and not is_demo
 
     if use_demo:
         df, factor = scale_data(df)

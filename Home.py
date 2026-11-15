@@ -28,7 +28,7 @@ if is_demo:
     )
 
 #Call df_filtered and filters
-df_filtered, month_filter, active_budget = get_sidebar_single(df)
+df_filtered, month_filter, active_budget = get_sidebar_single(df, is_demo)
 
 #------------------------CALCS---------------------------
 total_expense = df_filtered[expense_cols].sum().sum() #sum total per category, then sum all categories

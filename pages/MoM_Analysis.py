@@ -20,7 +20,7 @@ df, is_demo = get_data()
 if is_demo:
     st.sidebar.warning("Demo - DATA IS NOT REAL")
 
-if privacy_toggle():
+if privacy_toggle() and not is_demo:
     df, factor = scale_data(df)
 
 
