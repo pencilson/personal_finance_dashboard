@@ -116,25 +116,34 @@ st.markdown("To use for Analyzing Monthly Budgets")
 st.divider()
 
 #Metrics
-col1, col3, col4 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 col1.metric(
-    "Monthly Budget",
+    "Budget",
     f"Rp{total_budget:,.0f}"
 )
 
-#Scrapping this for now as it's irrelevant
-#col2.metric(
-    #"Avg Monthly Actual",
-    #f"Rp{total_actual:,.0f}"
-#)
-
-col3.metric(
-    "Monthly Difference",
-    f"Rp {total_difference:,.0f}",
-    delta=int(total_difference), #add indicator under metric, Under if below 0, Over if above 0
-    delta_color="normal"
+col2.metric(
+    "Actual",
+    f"Rp{total_actual:,.0f}"
 )
+
+if total_difference < 0:
+    col3.metric(
+        "Difference",
+        f"Rp {total_difference:,.0f}",
+        f"-Over Budget", #add indicator under metric, Under if below 0, Over if above 0
+        delta_color="normal"
+    )
+elif total_difference > 0:
+    col3.metric(
+        " Difference",
+        f"Rp {total_difference:,.0f}",
+        f"-Under Budget", #add indicator under metric, Under if below 0, Over if above 0
+        delta_color="normal"
+    )
+else :
+    col3.metric(" Difference", "0","Under Budget", delta_color="normal")
 
 #Using markdown to add CSS stylings to the component
 col4.markdown(f""" 

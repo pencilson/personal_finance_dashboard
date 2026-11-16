@@ -49,6 +49,9 @@ st.title("Month to Month Analysis")
 
 col1, col2, col3 = st.columns(3)
 
+def format_delta(x):
+    return f"{'-' if x <0 else '+'}Rp {abs(x):,.0f}"
+
 col1.metric(
     f"{latest['Month']} Total",
     f"Rp {latest['Total']:,.0f}",
@@ -56,19 +59,23 @@ col1.metric(
     delta_color="inverse"
 )
 
-col2.metric(
+if category_difference.max()>0:
+    col2.metric(
     "Biggest Increase",
     biggest_increase,
-    f"Rp{category_difference[biggest_increase]:,.0f}",
-    delta_color="inverse"
-)
+    format_delta(category_difference[biggest_increase]), delta_color = "inverse"
+    )
+else :
+    col2.metric("Biggest Increase","None")
 
-col3.metric(
-    "Biggest Decrease",
-    biggest_decrease,
-    f"Rp{category_difference[biggest_decrease]:,.0f}",
-    delta_color="inverse"
-)
+if category_difference.min()<0:
+    col3.metric(
+        "Biggest Decrease",
+        biggest_decrease,
+        format_delta(category_difference[biggest_decrease]), delta_color ="inverse"
+    )
+else:
+    col3.metric("Biggest Decrease","None")
 
 #---------------CHARTS--------------------
 st.subheader("MoM Expense Trend")
